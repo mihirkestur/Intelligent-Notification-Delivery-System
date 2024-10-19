@@ -16,15 +16,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.activitycollector.ui.theme.ActivityCollectorTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (!hasNotificationAccess(applicationContext)) {
             openPermissions()
         }
-        val intent = Intent(this, Notifications::class.java)
-        startForegroundService(intent)
+        val notificationServiceIntent = Intent(this, Notifications::class.java)
+        val activityRecognitionIntent = Intent(this, ActivityDetectionService::class.java)
+
+        startForegroundService(notificationServiceIntent)
+        startForegroundService(activityRecognitionIntent)
         enableEdgeToEdge()
         setContent {
             ActivityCollectorTheme {
