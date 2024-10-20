@@ -1,6 +1,7 @@
 [versions]
 agp = "8.6.1"
 datastorePreferences = "1.1.1"
+firebaseBom = "33.4.0"
 hiltAndroid = "2.51.1"
 kotlin = "1.9.0"
 coreKtx = "1.10.1"
@@ -17,6 +18,7 @@ datastoreCoreAndroid = "1.1.1"
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
+firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroid" }
 hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hiltAndroid" }
 jetbrains-kotlinx-coroutines-play-services = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services", version.ref = "kotlinxCoroutinesPlayServicesVersion" }
