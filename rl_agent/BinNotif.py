@@ -26,10 +26,10 @@ class NotificationTimingEnv(gym.Env):
         send_notification = action
         
         # Reward: 1 if action is 1 and time is between 0.5-0.6, -1 otherwise
-        if send_notification == 1 and 0.5 <= self.time_of_day:
+        if send_notification == 1 and self.simulate_user() == 1:# 0.5 <= self.time_of_day:
             reward = 1
-        elif send_notification == 0 and self.time_of_day < 0.5:
-            reward = 1
+        elif send_notification == 0 and self.simulate_user() == 0:
+            reward = -0.01
         else:
             reward = -1
         
@@ -45,3 +45,9 @@ class NotificationTimingEnv(gym.Env):
     
     def render(self, mode="human"):
         print(f"Time of day: {self.time_of_day}")
+    
+    def simulate_user(self):
+        if 0.5 <= self.time_of_day and self.time_of_day <= 0.7:
+            return 1
+        else:
+            return 0
