@@ -34,10 +34,11 @@ class NotificationTimingEnv(gym.Env):
             reward = -1
         
         # Update the time of day (e.g., advance by a small amount)
-        # self.time_of_day = (self.time_of_day + 0.1) % 1
+        self.time_of_day = self.time_of_day + 0.1
         
         # The episode ends after each step
-        done = True
+        if self.time_of_day > 1: done = True
+        else: done = False
 
         # Return the next state, reward, and done flag
         return np.array([self.time_of_day], dtype=np.float32), reward, done, False, {}
