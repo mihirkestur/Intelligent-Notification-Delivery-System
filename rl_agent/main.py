@@ -7,23 +7,23 @@ import numpy as np
 env = NotificationTimingEnv()
 
 # # Train an RL agent
-# model = DQN("MlpPolicy", env, verbose=1) # MultiInputPolicy
+# model = DQN("MultiInputPolicy", env, verbose=1) # MultiInputPolicy
 # # model = PPO("MlpPolicy", env, verbose=1)
-# model.learn(total_timesteps=10000)
+# model.learn(total_timesteps=100000, log_interval=100)
 # # Save the model
-# model.save("./models/BinNotifTest3")
+# model.save("./models/BinNotifTest4")
 
 
 # Load the saved model
 # model = PPO.load("./models/notification_model")
-model = DQN.load("./models/BinNotifTest3")
+model = DQN.load("./models/BinNotifTest4")
 # Test the trained agent
-for i in range(0, 10):
+for i in range(1, 10):
     observation = {
-        "time_of_day": np.array([0.5], dtype=np.float32),
-        "app_type": np.array([1], dtype=np.float32),
+        "time_of_day": np.array([i/10], dtype=np.float32),
+        "app_type": np.array([0], dtype=np.float32),
     }
-    action, _states = model.predict(np.array([i/10], dtype=np.float32), deterministic=True)
+    action, _states = model.predict(observation, deterministic=True)
     print(action, _states)
 # # obs, _ = env.reset()
 # # env.send_notification_time = np.array([99])

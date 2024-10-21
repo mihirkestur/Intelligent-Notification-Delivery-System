@@ -7,7 +7,11 @@ class NotificationTimingEnv(gym.Env):
         super(NotificationTimingEnv, self).__init__()
         
         # State: Time of the day (continuous between 0 and 1)
-        self.observation_space = spaces.Box(low=0, high=1, shape=(1,), dtype=np.float32)
+        self.observation_space = spaces.Dict({
+            'time_of_day': spaces.Box(low=0, high=1, shape=(1,), dtype=np.float32),
+            'app_type': spaces.Discrete(2)  # 0: app X, 1: app Y
+        })
+        # spaces.Box(low=0, high=1, shape=(1,), dtype=np.float32)
         
         # Action: Discrete action space (0 or 1)
         self.action_space = spaces.Discrete(2)
@@ -15,18 +19,24 @@ class NotificationTimingEnv(gym.Env):
         # Initialize time of day
         self.time_of_day = np.random.uniform(0, 1)
 
+        # App type
+        self.app_type = np.random.choice([0, 1])
+
     def reset(self, seed=None):
         self.time_of_day = np.random.uniform(0, 1)
-        
+        self.app_type = np.random.choice([0, 1])
         # Return the initial observation
-        return np.array([self.time_of_day], dtype=np.float32), {}
+        return {
+            'time_of_day': np.array([self.time_of_day], dtype=np.float32),
+            'app_type': self.app_type
+        }, {}
     
     def step(self, action):
         # The action is either 0 or 1
         send_notification = action
         
         # Reward: 1 if action is 1 and time is between 0.5-0.6, -1 otherwise
-        if send_notification == 1 and self.simulate_user() == 1:# 0.5 <= self.time_of_day:
+        if send_notification == 1 and self.simulate_user() == 1: # 0.5 <= self.time_of_day:
             reward = 1
         elif send_notification == 0 and self.simulate_user() == 0:
             reward = -0.01
@@ -41,13 +51,22 @@ class NotificationTimingEnv(gym.Env):
         else: done = False
 
         # Return the next state, reward, and done flag
-        return np.array([self.time_of_day], dtype=np.float32), reward, done, False, {}
+        return {
+            'time_of_day': np.array([self.time_of_day], dtype=np.float32),
+            'app_type': self.app_type
+        }, reward, done, False, {}
     
     def render(self, mode="human"):
         print(f"Time of day: {self.time_of_day}")
     
     def simulate_user(self):
-        if 0.5 <= self.time_of_day and self.time_of_day <= 0.7:
-            return 1
+        if self.app_type == 0:
+            if 0.5 <= self.time_of_day <= 0.7:
+                return 1
+            else:
+                return 0
         else:
-            return 0
+            if 0.3 <= self.time_of_day <= 0.5:
+                return 1
+            else:
+                return 0
