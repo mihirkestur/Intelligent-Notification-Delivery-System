@@ -1,68 +1,59 @@
-import gymnasium as gym
-from gymnasium import spaces
 import numpy as np
+from gymnasium import spaces, Env
 
-class NotificationTimingEnv(gym.Env):
+class NotificationTimingEnv(Env):
     def __init__(self):
         super(NotificationTimingEnv, self).__init__()
         
-        # State: Time of the day when the agent can send a notification (continuous between 0 and 1)
-        # self.observation_space = spaces.Box(low=0, high=1, shape=(1,), dtype=np.float32)
         self.observation_space = spaces.Dict({
             'time_of_day': spaces.Box(low=0, high=1, shape=(1,), dtype=np.float32),
             'app_type': spaces.Discrete(2)  # 0: app X, 1: app Y
         })
-        
-        # Action: Time to send a notification (continuous between 0 and 1)
-        self.action_space = spaces.Box(low=0, high=1, shape=(1,), dtype=np.float32)
-        
-        # Initialize Send Notification Time 
-        self.send_notification_time = np.random.uniform(0, 1)
-        self.app_type = np.random.choice([0, 1])
+        self.action_space = spaces.Discrete(2)  # 0: do not send, 1: send now
+        self.app_type = None
+        self.current_hour = None
+        self.episode_length = 1
+        self.send_notification = False
 
     def reset(self, seed=None):
-        self.send_notification_time = np.random.uniform(0, 1)
-        self.app_type = np.random.choice([0, 1])  # Randomly set the app (app X or app Y)
-        
-        # Return the initial observation
-        return {
-            'time_of_day': np.array([self.send_notification_time], dtype=np.float32),
-            'app_type': self.app_type
-        }, {}
-    
+        super().reset(seed=seed)
+        self.app_type = np.random.randint(0, 2)
+        self.current_hour = 0
+        self.send_notification = False
+        return self._get_obs(), self._get_info()
+
     def step(self, action):
-        # The action represents the time to send the notification (between 0 and 1)
-        notification_send_prediction = action[0]
-        
-        # Simulate the actual open time based on the arrival time
-        actual_open_time = self.simulate_open_time(notification_send_prediction)
-        
-        time_diff = abs(notification_send_prediction - actual_open_time)
-        # Reward: Negative absolute difference between actual open time and notification time
-        if notification_send_prediction in [(actual_open_time-0.001), (actual_open_time+0.001)]: reward = 1 
-        else: reward = -time_diff # -np.exp(time_diff / 60) # abs(notification_send_prediction - actual_open_time)
-        
-        # Update the Send Notification Time to simulate the passage of time (e.g., advance by 1 hour)
-        self.send_notification_time = notification_send_prediction
-        
-        # The episode ends 
-        done = 1
-
-        # Return the next state (Send Notification Time), reward, and done flag
-        # return np.array([self.send_notification_time], dtype=np.float32), reward, done, False, {}
-        return {
-            'time_of_day': np.array([self.send_notification_time], dtype=np.float32),
-            'app_type': self.app_type
-        }, reward, done, False, {}
-        
-    
-    def render(self, mode="human"):
-        # Print Send Notification Time and action
-        print(f"Send Notification Time: {self.send_notification_time}")
-
-    # Example function to simulate the open time based on notification arrival time
-    def simulate_open_time(self, notif_arrive_time):
-        if self.app_type == 0:
-            return 0.5
+        if action == 1:  # If action is to send
+            if self.simulate_user_behaviour(self.current_hour, self.app_type):
+                reward = 1
+            else:
+                reward = -1
         else:
-            return 0.9
+            if self.simulate_user_behaviour(self.current_hour, self.app_type):
+                reward = -1
+            else:
+                reward = 0.5
+        
+        # # Move to the next hour
+        # self.current_hour += (1/24)
+        # done = self.current_hour >= self.episode_length
+
+        return self._get_obs(), reward, True, False, self._get_info()
+
+    def _get_obs(self):
+        return {
+            'time_of_day': np.array([self.current_hour], dtype=np.float32),
+            'app_type': self.app_type
+        }
+
+    def _get_info(self):
+        return {}
+
+    def render(self, mode="human"):
+        print(f"Current Hour: {self.current_hour}, App Type: {self.app_type}, Notification Sent: {self.send_notification}")
+
+    def simulate_user_behaviour(self, time_of_day, app_type):
+        if app_type == 0:  # App X
+            return 0.1 <= time_of_day <= 0.4
+        else:  # App Y
+            return 0.6 <= time_of_day <= 1
