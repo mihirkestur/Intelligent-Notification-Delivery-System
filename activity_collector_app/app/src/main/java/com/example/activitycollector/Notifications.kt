@@ -14,6 +14,8 @@ import com.google.android.gms.location.ActivityRecognition
 import com.google.android.gms.location.ActivityRecognitionClient
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.google.firebase.Firebase
+import com.google.firebase.firestore.firestore
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -25,6 +27,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.asDeferred
 import javax.inject.Inject
 
+
 @AndroidEntryPoint
 class Notifications : NotificationListenerService() {
     private lateinit var activityRecognitionClient: ActivityRecognitionClient
@@ -33,6 +36,8 @@ class Notifications : NotificationListenerService() {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     @Inject
     lateinit var activityRepository: DataRepository
+
+    private val db = Firebase.firestore
 
     private object Constants {
         const val TAG = "NOTIFICATION_LISTENER"
@@ -87,6 +92,23 @@ class Notifications : NotificationListenerService() {
                 Constants.TAG,
                 "Notification POSTED [$packageName] [$title], Activity: [$currentActivity], Location($longitude, $latitude)"
             )
+
+            val data = hashMapOf(
+                "activity" to currentActivity,
+                "location_longitude" to longitude,
+                "location_latitude" to latitude,
+                "app_name" to packageName,
+                "notification_title" to title,
+            )
+
+            db.collection("notifications")
+                .add(data)
+                .addOnSuccessListener { documentReference ->
+                    Log.d(Constants.TAG, "DocumentSnapshot added with ID: ${documentReference.id}")
+                }
+                .addOnFailureListener{ e ->
+                    Log.w(Constants.TAG, "error adding document", e)
+                }
         }
     }
 
