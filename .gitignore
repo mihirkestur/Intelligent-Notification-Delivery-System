@@ -1,6 +1,4 @@
 __pycache__
-*.zip
 misc
-models
 logs
 dataset
