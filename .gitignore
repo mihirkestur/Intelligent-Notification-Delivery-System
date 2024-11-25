@@ -4,3 +4,5 @@ misc
 models
 logs
 dataset
+.venv
+.idea/
