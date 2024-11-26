@@ -1,7 +1,7 @@
 import gymnasium as gym
 from gymnasium import spaces
 import numpy as np
-
+import random
 
 class NotificationTimingEnv(gym.Env):
     def __init__(self):
@@ -11,6 +11,8 @@ class NotificationTimingEnv(gym.Env):
         self.observation_space = spaces.Dict(
             {
                 "time_of_day": spaces.Box(low=0, high=1, shape=(1,), dtype=np.float32),
+                "location": spaces.Discrete(4),
+                "activity": spaces.Discrete(3),
                 "app_type": spaces.Discrete(2),  # 0: app X, 1: app Y
             }
         )
@@ -20,21 +22,27 @@ class NotificationTimingEnv(gym.Env):
         self.action_space = spaces.Discrete(2)
 
         # Initialize time of day
-        self.time_of_day = np.random.uniform(0, 1)
+        self.time_of_day = 0
 
-        self.location = np.random.choice([0, 1, 2, 3])  # home, school, library, unknown
+        self.location = 2 # np.random.choice([0, 1, 2, 3])  # home, school, library, unknown
 
-        self.activity = np.random.choice([0, 1, 2])  # running, walking, still
+        self.activity = 2 # np.random.choice([0, 1, 2])  # running, walking, still
 
         # App type
-        self.app_type = np.random.choice([0, 1])
+        self.app_type = 0
 
     def reset(self, seed=None):
-        self.time_of_day = np.random.uniform(0, 1)
-        self.app_type = np.random.choice([0, 1])
+        self.time_of_day = 0
+
+        self.location = 2 # np.random.choice([0, 1, 2, 3])  # home, school, library, unknown
+
+        self.activity = 2 # np.random.choice([0, 1, 2])  # running, walking, still
+        self.app_type = 0
         # Return the initial observation
         return {
             "time_of_day": np.array([self.time_of_day], dtype=np.float32),
+            "location": self.location,
+            "activity": self.activity,
             "app_type": self.app_type,
         }, {}
 
@@ -42,13 +50,12 @@ class NotificationTimingEnv(gym.Env):
         # The action is either 0 or 1
         send_notification = action
 
-        # Reward: 1 if action is 1 and time is between 0.5-0.6, -1 otherwise
         if (
             send_notification == 1 and self.simulate_user() == 1
-        ):  # 0.5 <= self.time_of_day:
+        ):  
             reward = 1
         elif send_notification == 0 and self.simulate_user() == 0:
-            reward = -0.01
+            reward = -0.001
         else:
             reward = -1
 
@@ -61,6 +68,9 @@ class NotificationTimingEnv(gym.Env):
         print(f"Time of day: {self.time_of_day}")
 
     def simulate_user(self):
+        uni_arrival_time = 0.46
+        library_arrival_time = 0.76
+        home_return_time = 0.8333
         if self.time_of_day < 0.29167:  # Before 7 AM
             return 0
         elif self.time_of_day < 0.45833:  # 7 AM - 11 AM
@@ -114,11 +124,11 @@ class NotificationTimingEnv(gym.Env):
 
     def simulate_state_of_env(self):
         # Simulate what the user does
-        # Update the time of day (e.g., advance by a small amount)
         self.time_of_day = self.time_of_day + 0.000695
         uni_arrival_time = 0.46
         library_arrival_time = 0.76
         home_return_time = 0.8333
+        returned_home = False
 
         # The episode ends after each step
         if self.time_of_day > 1:
@@ -129,15 +139,11 @@ class NotificationTimingEnv(gym.Env):
         if self.time_of_day < 0.29167:  # Before 7 AM
             self.activity = self.activity_encoding("still")
             self.location = self.location_encoding("home")
-            clicked = "no"
+            
         elif self.time_of_day < 0.45833:  # 7 AM - 11 AM
             self.activity = self.activity_encoding("still")
             self.location = self.location_encoding("home")
-            clicked = (
-                "yes"
-                if random.random() < (0.3 if app_name == "whatsapp" else 0.9)
-                else "no"
-            )
+
         elif self.time_of_day < 0.75:  # 11 AM - 6 PM
             if self.time_of_day < uni_arrival_time:
                 self.activity = self.activity_encoding(
@@ -150,7 +156,7 @@ class NotificationTimingEnv(gym.Env):
                     self.activity = self.activity_encoding("walking")
                 else:
                     self.activity = self.activity_encoding("still")
-            clicked = "yes" if random.random() < 0.5 else "no"
+            
         elif self.time_of_day < home_return_time:  # 6 PM - 8 PM
             if self.time_of_day < library_arrival_time:
                 self.activity = self.activity_encoding(
@@ -164,13 +170,13 @@ class NotificationTimingEnv(gym.Env):
                     self.activity = self.activity_encoding("walking")
                 else:
                     self.activity = self.activity_encoding("still")
-            clicked = "yes" if random.random() < 0.5 else "no"
+            
         elif self.time_of_day < 0.95833:  # 8 PM - 11 PM
             if not returned_home:
                 if (
                     self.time_of_day < home_return_time + 0.0208
                 ):  # 30 minutes to return home
-                    self.activity = random.choice(["walking", "running"])
+                    self.activity = self.activity_encoding(random.choice(["walking", "running"]))
                     self.location = self.location_encoding("unknown")
                 else:
                     returned_home = True
@@ -179,12 +185,13 @@ class NotificationTimingEnv(gym.Env):
             else:
                 self.activity = self.activity_encoding("still")
                 self.location = self.location_encoding("home")
-            clicked = "yes" if random.random() < 0.7 else "no"
+            
         else:  # After 11 PM
             self.activity = self.activity_encoding("still")
             self.location = self.location_encoding("home")
-            clicked = "no"
-
+            
+        self.app_type = random.randint(0, 1)
+        
         return {
             "time_of_day": np.array([self.time_of_day], dtype=np.float32),
             "location": self.location,

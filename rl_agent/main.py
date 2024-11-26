@@ -22,27 +22,29 @@ new_logger = configure(log_path, ["csv"])
 # # Set the new logger
 # model.set_logger(new_logger)
 # # model = PPO("MlpPolicy", env, verbose=1)
-# model.learn(total_timesteps=100000, log_interval=100)
+# model.learn(total_timesteps=1000000)
 # # Save the model
-# model.save("./models/newtest")
+# model.save("./models/plswork1")
 
-# # Load the saved model
-# # model = PPO.load("./models/notification_model")
-# model = DQN.load("./models/newtest")
+# Load the saved model
+# model = PPO.load("./models/notification_model")
+model = DQN.load("./models/plswork1")
 # # Test the trained agent
-# print("Time of Day", "\tApp Type", "Action")  
-# for i in range(1, 10):
-#     observation = {
-#         "time_of_day": np.array([i/10], dtype=np.float32),
-#         "app_type": np.array([0], dtype=np.float32),
-#     }
-#     print(observation["time_of_day"], observation["app_type"], sep='\t\t', end="\t")
-#     action, _states = model.predict(observation, deterministic=True)
-#     if action[0] == 0:
-#         print("Don't Send", end="\t")
-#     else:
-#         print("Send Now", end="\t")
-#     print("\n")
+print("Time of Day", "\tApp Type", "Action")  
+for i in range(1, 10):
+    observation = {
+        "time_of_day": np.array([i/10], dtype=np.float32),
+        "app_type": np.array([1], dtype=np.float32),
+        "location":2,
+        "activity":2
+    }
+    print(observation)
+    action, _states = model.predict(observation, deterministic=True)
+    if action[0] == 0:
+        print("Don't Send", end="\t")
+    else:
+        print("Send Now", end="\t")
+    print("\n")
 # print("Time of Day", "\tApp Type", "Action")
 # for i in range(1, 10):
 #     observation = {
