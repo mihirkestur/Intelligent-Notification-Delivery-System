@@ -19,6 +19,10 @@ class NotificationTimingEnv(gym.Env):
         # Initialize time of day
         self.time_of_day = np.random.uniform(0, 1)
 
+        self.location = np.random.choice([0, 1, 2, 3]) # home, school, library, unknown
+
+        self.activity = np.random.choice([0, 1, 2]) # running, walking, still
+
         # App type
         self.app_type = np.random.choice([0, 1])
 
@@ -42,19 +46,11 @@ class NotificationTimingEnv(gym.Env):
             reward = -0.01
         else:
             reward = -1
-        
-        # Update the time of day (e.g., advance by a small amount)
-        self.time_of_day = self.time_of_day + 0.1
-        
-        # The episode ends after each step
-        if self.time_of_day > 1: done = True
-        else: done = False
+
+        next_state, is_day_done = self.simulate_state_of_env()
 
         # Return the next state, reward, and done flag
-        return {
-            'time_of_day': np.array([self.time_of_day], dtype=np.float32),
-            'app_type': self.app_type
-        }, reward, done, False, {}
+        return next_state, reward, is_day_done, False, {}
     
     def render(self, mode="human"):
         print(f"Time of day: {self.time_of_day}")
@@ -70,3 +66,25 @@ class NotificationTimingEnv(gym.Env):
                 return 1
             else:
                 return 0
+    
+    def simulate_state_of_env(self):
+        # Simulate what the user does 
+        
+        # Update the time of day (e.g., advance by a small amount)
+        self.time_of_day = self.time_of_day + 0.000695
+        # The episode ends after each step
+        if self.time_of_day > 1: done = True
+        else: done = False
+        
+        # self.location = np.random.choice([0, 1, 2, 3]) # home, school, library, unknown
+
+        # self.activity = np.random.choice([0, 1, 2]) # running, walking, still
+
+        # i sleep 
+
+        return {
+            'time_of_day': np.array([self.time_of_day], dtype=np.float32),
+            'location': self.location,
+            'activity': self.activity,
+            'app_type': self.app_type
+        }, done
