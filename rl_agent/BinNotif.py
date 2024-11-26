@@ -116,6 +116,10 @@ class NotificationTimingEnv(gym.Env):
         # Simulate what the user does
         # Update the time of day (e.g., advance by a small amount)
         self.time_of_day = self.time_of_day + 0.000695
+        uni_arrival_time = 0.46
+        library_arrival_time = 0.76
+        home_return_time = 0.8333
+
         # The episode ends after each step
         if self.time_of_day > 1:
             done = True
