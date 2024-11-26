@@ -24,25 +24,25 @@ new_logger = configure(log_path, ["csv"])
 # # model = PPO("MlpPolicy", env, verbose=1)
 # model.learn(total_timesteps=100000, log_interval=100)
 # # Save the model
-# model.save("./models/BinNotifTestplot")
+# model.save("./models/newtest")
 
-# Load the saved model
-# model = PPO.load("./models/notification_model")
-model = DQN.load("./models/BinNotifTest4")
-# Test the trained agent
+# # Load the saved model
+# # model = PPO.load("./models/notification_model")
+# model = DQN.load("./models/newtest")
+# # Test the trained agent
 # print("Time of Day", "\tApp Type", "Action")  
-for i in range(1, 2):
-    observation = {
-        "time_of_day": np.array([i/10], dtype=np.float32),
-        "app_type": np.array([0], dtype=np.float32),
-    }
-    # print(observation["time_of_day"], observation["app_type"], sep='\t\t', end="\t")
-    action, _states = model.predict(observation, deterministic=True)
-    # if action[0] == 0:
-    #     print("Don't Send", end="\t")
-    # else:
-    #     print("Send Now", end="\t")
-    # print("\n")
+# for i in range(1, 10):
+#     observation = {
+#         "time_of_day": np.array([i/10], dtype=np.float32),
+#         "app_type": np.array([0], dtype=np.float32),
+#     }
+#     print(observation["time_of_day"], observation["app_type"], sep='\t\t', end="\t")
+#     action, _states = model.predict(observation, deterministic=True)
+#     if action[0] == 0:
+#         print("Don't Send", end="\t")
+#     else:
+#         print("Send Now", end="\t")
+#     print("\n")
 # print("Time of Day", "\tApp Type", "Action")
 # for i in range(1, 10):
 #     observation = {
