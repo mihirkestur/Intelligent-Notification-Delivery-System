@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1088301902233",
+    "project_id": "activitycollector",
+    "storage_bucket": "activitycollector.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1088301902233:android:b5af4d4e404cff9f298b08",
+        "android_client_info": {
+          "package_name": "com.example.activitycollector"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBnjEWDKZxFRLHiXn3kNoPQvILve2rbw2g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
