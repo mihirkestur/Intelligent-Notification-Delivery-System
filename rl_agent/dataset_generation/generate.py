@@ -85,7 +85,8 @@ def generate_dataset():
     
     return pd.DataFrame(data, columns=['time_of_day', 'human_readable_time', 'app_name', 'activity', 'geofenced_location', 'clicked'])
 
-# Generate the dataset
-dataset = generate_dataset()
+if __name__ == "__main__":
+    # Generate the dataset
+    dataset = generate_dataset()
 
-dataset.sort_values(by='time_of_day')[['time_of_day', 'human_readable_time', 'app_name', 'activity', 'geofenced_location']].to_csv('dataset.csv', index=False)
+    dataset.sort_values(by='time_of_day')[['time_of_day', 'human_readable_time', 'app_name', 'activity', 'geofenced_location']].to_csv('dataset.csv', index=False)

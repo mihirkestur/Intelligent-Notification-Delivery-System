@@ -5,6 +5,7 @@ from stable_baselines3.common.callbacks import BaseCallback
 import numpy as np
 from stable_baselines3.common.logger import configure
 import csv
+from user_response_speed import simulate_user
 
 # Set up the path for logging
 log_path = "./logs/"
@@ -30,64 +31,8 @@ model = DQN.load("./models/final")
 # Load the dataset
 dataset_filename = "./dataset_generation/user_behavior_dataset.csv"
 
-def simulate_user(data):
-    def activity_encoding(activity_str):
-        if activity_str == "still":
-            return 2
-        elif activity_str == "walking":
-            return 1
-        else:
-            return 0
-
-    def location_encoding(location_str):
-        if location_str == "unknown":
-            return 0
-        elif location_str == "university":
-            return 1
-        elif location_str == "home":
-            return 2
-        else:
-            return 3
-
-    time_of_day = data["time_of_day"]
-    location = data["location"]
-    activity = data["activity"]
-    app_type = data["app_type"]
-
-    home_return_time = 0.8333
-
-    if time_of_day < 0.29167:  # Before 7 AM
-        return 0
-    elif time_of_day < 0.45833:  # 7 AM - 11 AM
-        if (
-            location == location_encoding("home")
-            and activity == activity_encoding("still")
-            and app_type == 0
-        ):
-            return 1
-        else:
-            return 0
-    elif time_of_day < 0.75:  # 11 AM - 6 PM
-        if location == location_encoding("unknown") and activity == activity_encoding("walking"):
-            return 1
-        else:
-            return 0
-    elif time_of_day < home_return_time:  # 6 PM - 8 PM
-        if (
-            location == location_encoding("library")
-            and activity == activity_encoding("still")
-            and app_type == 1
-        ):
-            return 1
-        else:
-            return 0
-    elif time_of_day < 0.95833:  # 8 PM - 11 PM
-        if location == location_encoding("home"):
-            return 1
-    else:  # After 11 PM
-        return 0
-
-acc = 0    
+acc = 0
+  
 # Test the trained agent with dataset
 with open(dataset_filename, "r") as file:
     reader = csv.DictReader(file)
