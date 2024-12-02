@@ -56,3 +56,5 @@ STILL 	    The device is still (not moving).
 TILTING 	The device angle relative to gravity changed significantly.
 UNKNOWN 	Unable to detect the current activity.
 WALKING
+
+https://medium.com/@hariharan.b/activity-recognition-client-transition-sampling-and-sleep-api-c140e5289de4
