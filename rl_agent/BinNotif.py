@@ -101,6 +101,8 @@ class NotificationTimingEnv(gym.Env):
         elif self.time_of_day < 0.95833:  # 8 PM - 11 PM
             if self.location == self.location_encoding("home"):
                 return 1
+            else:
+                return 0
         else:  # After 11 PM
             return 0
 
