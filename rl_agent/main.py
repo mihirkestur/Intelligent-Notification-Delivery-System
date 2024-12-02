@@ -104,6 +104,7 @@ with open(dataset_filename, "r") as file:
         action, _states = model.predict(observation, deterministic=True)
         open = simulate_user(observation)
         if open == action: acc+=1
+
 print(100*acc/1440)
 
 # # Load the saved model
