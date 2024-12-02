@@ -14,6 +14,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.app.ServiceCompat
 import com.google.android.gms.location.ActivityRecognition
 import com.google.android.gms.location.ActivityRecognitionClient
+import com.google.android.gms.location.ActivityRecognitionResult
 import com.google.android.gms.location.ActivityTransition
 import com.google.android.gms.location.ActivityTransitionRequest
 import com.google.android.gms.location.ActivityTransitionResult
@@ -24,7 +25,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-
 @AndroidEntryPoint
 class ActivityDetectionService : Service() {
     private val job = SupervisorJob()
@@ -39,7 +39,9 @@ class ActivityDetectionService : Service() {
     private lateinit var activityRecognitionClient: ActivityRecognitionClient
     override fun onCreate() {
         super.onCreate()
+        Log.d(Constants.TAG, "Activity client was created")
         activityRecognitionClient = ActivityRecognition.getClient(this)
+        requestActivityUpdates()
     }
 
     private fun startForeground() {
@@ -55,7 +57,6 @@ class ActivityDetectionService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
         startForeground()
-        requestActivityUpdates()
         return START_STICKY
     }
 
@@ -65,7 +66,7 @@ class ActivityDetectionService : Service() {
             this,
             Constants.REQUEST_CODE_INTENT_ACTIVITY_TRANSITION,
             intent,
-            PendingIntent.FLAG_IMMUTABLE
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
         )
 
         if (ActivityCompat.checkSelfPermission(
@@ -73,18 +74,14 @@ class ActivityDetectionService : Service() {
                 Manifest.permission.ACTIVITY_RECOGNITION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
             Log.d(Constants.TAG, "Permission for activity recognition was denied")
             return
         }
-        activityRecognitionClient.requestActivityTransitionUpdates(
-            ActivityTransitionRequest(this.getActivityTransitions()),
+
+        Log.d(Constants.TAG, "perms are there, start activity recognition")
+        activityRecognitionClient.requestActivityUpdates(
+            1000,
+//            ActivityTransitionRequest(this.getActivityTransitions()),
             pendingIntent
         ).addOnSuccessListener {
             Log.d(Constants.TAG, "Registered for activity recognition")
@@ -131,10 +128,27 @@ class ActivityDetectionService : Service() {
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.d(Constants.TAG, "destroyed activity service")
+    }
 }
 
 class ActivityTransitionReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
+        Log.d("ACTIVITY_RECOGNITION", "received intent")
+        if (ActivityRecognitionResult.hasResult(intent)) {
+            val result = ActivityRecognitionResult.extractResult(intent)
+            result?.let {
+                    val activityType = toActivityString(result.mostProbableActivity.type)
+                    Log.d("ACTIVITY_RECOGNITION", "Transition: $activityType")
+                    if (context is ActivityDetectionService) {
+                        Log.d("ACTIVITY_RECOGNITION", "Correct context")
+                        context.updateActivity(HumanActivity(activityType))
+                }
+            }
+        }
         if (ActivityTransitionResult.hasResult(intent)) {
             val result = ActivityTransitionResult.extractResult(intent)
             result?.let {

@@ -66,6 +66,7 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.hilt.android)
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.okhttp)
     implementation(libs.jetbrains.kotlinx.coroutines.play.services)
     kapt(libs.hilt.android.compiler)
     implementation(platform(libs.firebase.bom))

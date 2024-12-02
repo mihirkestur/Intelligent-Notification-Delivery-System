@@ -62,8 +62,9 @@
                 android:value="notificationListener" />
         </service>
 
-        <receiver android:name=".ActivityTransitionReceiver">
-
+        <receiver android:name=".ActivityTransitionReceiver"
+            android:permission="com.google.android.gms.permission.ACTIVITY_RECOGNITION"
+            android:exported="false">
         </receiver>
     </application>
 
